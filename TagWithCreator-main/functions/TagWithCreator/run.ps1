@@ -12,6 +12,8 @@ if ($null -eq $caller) {
     }
 }
 
+$date = Get-Date -Format "dddd MM/dd/yyyy"
+
 Write-Host "Caller: $caller"
 $resourceId = $eventGridEvent.data.resourceUri
 Write-Host "ResourceId: $resourceId"
@@ -39,6 +41,10 @@ $newTag = @{
     Creator = $caller
 }
 
+$dateTag = @{
+    Date Created = $date
+}
+
 $tags = (Get-AzTag -ResourceId $resourceId)
 
 if ($tags) {
@@ -57,6 +63,7 @@ if ($tags) {
         else {
             Write-Host "Added Creator tag with user: $caller"
             New-AzTag -ResourceId $resourceId -Tag $newTag | Out-Null
+            New-AzTag -ResourceId $resourceId -Tag $dateTag | Out-Null
         }
     }
     else {
