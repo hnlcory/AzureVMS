@@ -42,7 +42,7 @@ $newTag = @{
 }
 
 $dateTag = @{
-    Date Created = $date
+    'Date Created' = $date
 }
 
 $tags = (Get-AzTag -ResourceId $resourceId)
