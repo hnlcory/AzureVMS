@@ -1,9 +1,65 @@
-# TagWithCreator
+AutoTagging VMs in Azure DevOps
 
-Blog posted at [Premier Field Engineering Tech Community](https://aka.ms/AnthonyWatherston)
+Purpose 
+Currently, The goal of the tagging  However, it is 
 
-Any issues you can raise them in this repository.
+Summary
+We followed Anthony Watherston’s guide for general guidelines on setup
+ Note: Deviations from the setup guide material are listed under the “VS Code” Section of Steps
 
-Disclaimer:
+Specifications
+Windows PowerShell 5
+Note: Windows PowerShell 7 will not work
+Azure Powershell
+Skeleton TagWithCreator file found here
 
-The sample scripts are not supported under any Microsoft standard support program or service. The sample scripts are provided AS IS without warranty of any kind. Microsoft further disclaims all implied warranties including, without limitation, any implied warranties of merchantability or of fitness for a particular purpose. The entire risk arising out of the use or performance of the sample scripts and documentation remains with you. In no event shall Microsoft, its authors, or anyone else involved in the creation, production, or delivery of the scripts be liable for any damages whatsoever (including, without limitation, damages for loss of business profits, business interruption, loss of business information, or other pecuniary loss) arising out of the use of or inability to use the sample scripts or documentation, even if Microsoft has been advised of the possibility of such damages.
+Steps
+
+VS Code – Initial skeleton file ‘TagWithCreator’
+-Setup requires changes in deploy.ps1 
+-          $resourceGroupName = ""  # <-- Replace with new group name
+-          $location = ""       	# <-- Requires a valid location
+-          $storageAccountName = "" # <-- Needs unique name (global unique required)  	
+-          $appServicePlanName = "" # <-- Replace with new service name
+-          $appInsightsName = ""    # <-- Replace with new Insight name
+-          $functionName = ""   	# <-- Needs unique name (global unique required) 
+-Required modifications to the “New-AzRoleAssignment” on line 19,20
+-Scope (Get-AzContext)[0].Subscription.Id
+-Added to both lines at the end, ensures that the role assignments are made for the subscription with the ID of the first subscription associated with the current scope 
+
+-Navigate to the resources folder and run with .\deploy.ps1
+*Optional changes to run.ps1 to add date created functionality
+$date = Get-Date -Format "dddd MM/dd/yyyy" 
+
+-Added before the “Write-Host "Caller: $caller"”
+
+$dateTag = @{
+    'Date Created' = $date
+}
+
+-Added before the “$tags = (Get-AzTag -ResourceId $resourceId)”
+
+ New-AzTag -ResourceId $resourceId -Tag $dateTag | Out-Null
+
+-Added after the “ New-AzTag -ResourceId $resourceId -Tag $newTag | Out-Null”
+
+Setting up the Event Grid
+- Create Event Subscription 
+  - Create the Event Grid "Object" 
+	- Name: Auto-Tagging (or whatever you like) 
+	- Event Schema: Event Grid Schema 
+	- Topic Types: Azure Subscription 
+	- Where it will go 
+  	- It will ask for Subscription, Resource Group, and Resource 
+	- Event Type: Resource Write Success 
+	- Endpoint Type: Azure Function (+ location of the function app) 
+
+
+References
+https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/tagging-azure-resources-with-a-creator/ba-p/1479819
+
+
+
+Results
+
+All new resources created within the defined resource group will automatically be given two tags: Who created the resource, and when the creation occurred 
