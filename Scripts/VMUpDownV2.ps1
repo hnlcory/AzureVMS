@@ -77,16 +77,16 @@ if ($downLists.Count -ne 0){
 #checks may be done in more efficient way via checking job status?  
 
 #currently, jobs not finished before time is done, force a wait period to give last vm chance to shutdown/startup
-Start-Sleep -Seconds 3
+#Start-Sleep -Seconds 3
 
 #check if up VMs are all up, if not, attempt 2nd time, if not still, add error to array
 foreach ($upList in $upLists){
     if (((Get-AzVM -VMName tagTest -Status).powerstate) -ne "VM running"){
         Write-Host ($upList -split ',')[0] "startup failed, retry" -ForegroundColor Red
-        Stop-AzVM -Name ($upList -split ',')[0] -ResourceGroupName ($upList -split ',')[1] -Force
+        Start-AzVM -Name ($upList -split ',')[0] -ResourceGroupName ($upList -split ',')[1] -Force
         #check again, if still failed, add error
         if (((Get-AzVM -VMName ($upList -split ',')[0] -Status).powerstate) -ne ("VM running")){
-            $errList += "$(($upList -split ',')[0]) Failed to properly shutdown"
+            $errList += "$(($upList -split ',')[0]) Failed to properly startup`n"
         }
     }
 }
@@ -98,7 +98,7 @@ foreach ($downList in $downLists){
         Stop-AzVM -Name ($downList -split ',')[0] -ResourceGroupName ($downList -split ',')[1] -Force
         #check again, if still failed, add error
         if (((Get-AzVM -VMName ($downList -split ',')[0] -Status).powerstate) -ne ("VM deallocated")){
-            $errList += "$(($downList -split ',')[0]) Failed to properly shutdown"
+            $errList += "$(($downList -split ',')[0]) Failed to properly shutdown`n"
         }
     }
 }
